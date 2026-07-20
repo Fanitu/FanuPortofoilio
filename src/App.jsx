@@ -251,7 +251,7 @@ function App() {
                 <pre>
                   <code>
 {`const developer = {
-  name: "Your Name",
+  name: "FANUEL BAHTA",
   role: "Full-Stack Dev",
   skills: ["React", "Node", 
            "MongoDB", "Express"],
@@ -282,7 +282,7 @@ function App() {
           <div className="about-content">
             <div className="about-text fade-up">
               <p className="about-intro">
-                Hey! I'm <span className="highlight">[Your Name]</span>, a full-stack developer 
+                Hey! I'm <span className="highlight">FANUEL BAHTA</span>, a full-stack developer 
                 based in Ethiopia. I've been building web applications for over 3 years, 
                 specializing in React, Node.js, and MongoDB.
               </p>
