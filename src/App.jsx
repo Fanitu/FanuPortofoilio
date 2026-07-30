@@ -41,57 +41,113 @@ function App() {
   }, []);
 
   const projects = [
-    {
-      id: 1,
-      title: 'Restaurant Management System',
-      description: 'Automated order tracking and profit analytics for fast-food businesses. Real-time COGS calculation and daily reporting.',
-      image: '🍽️',
-      category: 'web',
-      tech: ['React', 'Node.js', 'MongoDB', 'Vercel'],
-      liveUrl: 'https://basic-managment.vercel.app',
-      featured: true,
-    },
-    {
-      id: 2,
-      title: 'Inventory Management Dashboard',
-      description: 'Complete stock tracking system with barcode scanning, low stock alerts, and supplier management for a private client.',
-      image: '📦',
-      category: 'web',
-      tech: ['Next.js', 'PostgreSQL', 'Prisma', 'Tailwind'],
-      liveUrl: '#',
-      featured: true,
-    },
-    {
-      id: 3,
-      title: 'Restaurant Ordering App',
-      description: 'Mobile-friendly ordering system with QR code menu, WhatsApp integration, and order tracking.',
-      image: '🍔',
-      category: 'mobile',
-      tech: ['React Native', 'Firebase', 'Node.js'],
-      liveUrl: 'https://react-fast-food-eight.vercel.app/',
-      featured: false,
-    },
-    {
-      id: 4,
-      title: 'Expense Tracker PWA',
-      description: 'Progressive web app for personal and business expense tracking with CSV export and charts.',
-      image: '💰',
-      category: 'web',
-      tech: ['Vue.js', 'Chart.js', 'IndexedDB'],
-      liveUrl: '#',
-      featured: false,
-    },
-    {
-      id: 5,
-      title: 'E-commerce API',
-      description: 'RESTful API for e-commerce platforms with authentication, product management, and order processing.',
-      image: '🔌',
-      category: 'backend',
-      tech: ['Node.js', 'Express', 'MongoDB', 'JWT'],
-      liveUrl: '#',
-      featured: false,
-    },
-  ];
+  {
+    id: 1,
+    title: "Restaurant Management SaaS",
+    description:
+      "A production SaaS platform used by 13+ restaurants to manage daily operations. Features order management, inventory tracking, automatic COGS calculation, monthly expense management, profit analytics, and daily, weekly, and monthly business reports.",
+    image: "🍽️",
+    category: "web",
+    tech: [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "JWT",
+      "Vercel"
+    ],
+    liveUrl: "https://basic-managment.vercel.app",
+    featured: true,
+  },
+
+  {
+    id: 2,
+    title: "Barber Management SaaS",
+    description:
+      "Complete barbershop management platform with automated commission calculations, payroll management, debt deduction, payable reports, service configuration, monthly expenses, and real-time revenue analytics for administrators.",
+    image: "💈",
+    category: "web",
+    tech: [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "JWT"
+    ],
+    liveUrl: "#",
+    featured: true,
+  },
+
+  {
+    id: 3,
+    title: "Multiplayer Bingo Platform",
+    description:
+      "Real-time multiplayer Bingo platform supporting over 200 boards per game with Socket.IO. Features instant winner validation, multiple simultaneous game rooms, multilingual voice announcements (English, Amharic, and Tigrinya), deposits, withdrawals, and live synchronization.",
+    image: "🎲",
+    category: "web",
+    tech: [
+      "React",
+      "Node.js",
+      "Socket.IO",
+      "MongoDB",
+      "Express"
+    ],
+    liveUrl: "#",
+    featured: true,
+  },
+
+  {
+    id: 4,
+    title: "Restaurant Ordering System",
+    description:
+      "Mobile-first ordering platform allowing customers to scan QR codes, browse digital menus, place orders, and send requests directly through website while restaurants track orders in real time.",
+    image: "📱",
+    category: "mobile",
+    tech: [
+      "React",
+      "Node.js",
+      "Firebase",
+      "WhatsApp API"
+    ],
+    liveUrl: "https://react-fast-food-eight.vercel.app/",
+    featured: false,
+  },
+
+  {
+    id: 5,
+    title: "AI Customer Support Assistant",
+    description:
+      "Generative AI-powered customer support chatbot integrated into my portfolio. Provides instant responses to visitors, answers questions about projects and services, and demonstrates AI integration within modern web applications.",
+    image: "🤖",
+    category: "web",
+    tech: [
+      "React",
+      "Node.js",
+      "LLM API",
+      "JavaScript"
+    ],
+    liveUrl: "#",
+    featured: false,
+  },
+
+  {
+    id: 6,
+    title: "E-commerce REST API",
+    description:
+      "Scalable RESTful backend featuring JWT authentication, product management, shopping cart functionality, order processing, and secure API architecture following modern backend best practices.",
+    image: "🔌",
+    category: "backend",
+    tech: [
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "JWT",
+      "REST API"
+    ],
+    liveUrl: "#",
+    featured: false,
+  },
+];
 
   const filteredProjects = activeFilter === 'all' 
     ? projects 
@@ -291,7 +347,7 @@ ${formData.message}
   name: "FANUEL BAHTA",
   role: "Full-Stack Dev",
   skills: ["React", "Node", 
-           "MongoDB", "Express"],
+           "MongoDB", "Express","Socket.IO","Generative Ai","Llm integration"],
   passion: "Building products 
             that solve real 
             business problems",
