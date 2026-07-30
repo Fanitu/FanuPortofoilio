@@ -90,7 +90,7 @@ RULES:
     setMessages(prev => [...prev, newUserMessage]);
     setInput('');
     setIsLoading(true);
-    const REACT_APP_GROQ_API_KEY = "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"
+    
 
     try {
       // Convert internal messages to API format
@@ -115,14 +115,16 @@ RULES:
         role: 'user',
         content: userInput
       });
+      console.log(import.meta.env)
 
-      console.log('Sending to Groq:', apiMessages);
+      const apiKey = import.meta.env.VITE_APP_GROQ_API_KEY;
+      console.log('Api key',apiKey)
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${REACT_APP_GROQ_API_KEY}`
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',

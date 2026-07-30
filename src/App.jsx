@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ChatBot from './ChatBot';
+import resumePdf from './assets/FinalResumeFanuel.pdf'
 import './App.css';
 
 function App() {
@@ -52,7 +54,7 @@ function App() {
     {
       id: 2,
       title: 'Inventory Management Dashboard',
-      description: 'Complete stock tracking system with barcode scanning, low stock alerts, and supplier management.',
+      description: 'Complete stock tracking system with barcode scanning, low stock alerts, and supplier management for a private client.',
       image: '📦',
       category: 'web',
       tech: ['Next.js', 'PostgreSQL', 'Prisma', 'Tailwind'],
@@ -135,11 +137,56 @@ function App() {
     },
   ];
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
+
+const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    alert('Thank you for reaching out! I will respond within 24 hours.');
-    setFormData({ name: '', email: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    const message = `
+🔔 *New Portfolio Inquiry!*
+
+👤 *Name:* ${formData.name}
+📧 *Email:* ${formData.email}
+📅 *Date:* ${new Date().toLocaleString()}
+
+💬 *Project Details:*
+${formData.message}
+    `.trim();
+
+    try {
+      const response = await fetch(
+        `https://api.telegram.org/bot${import.meta.env.VITE_APP_TELEGRAM_BOT_TOKEN}/sendMessage`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: import.meta.env.VITE_APP_TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown',
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error('Telegram API error');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmitStatus(null), 5000);
+    }
   };
 
   const scrollToSection = (sectionId) => {
@@ -166,7 +213,7 @@ function App() {
             <button onClick={() => scrollToSection('projects')}>Projects</button>
             <button onClick={() => scrollToSection('skills')}>Skills</button>
             <button onClick={() => scrollToSection('contact')}>Contact</button>
-            <button className="nav-resume" onClick={() => window.open('#', '_blank')}>
+            <button className="nav-resume" onClick={() => window.open(resumePdf, '_blank')}>
               Resume 📄
             </button>
           </div>
@@ -364,7 +411,7 @@ function App() {
             </p>
           </div>
 
-          <div className="project-filters fade-up">
+          {/* <div className="project-filters fade-up">
             <button 
               className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
               onClick={() => setActiveFilter('all')}
@@ -389,7 +436,7 @@ function App() {
             >
               Backend
             </button>
-          </div>
+          </div> */}
 
           <div className="projects-grid">
             {filteredProjects.map((project, index) => (
@@ -528,15 +575,15 @@ function App() {
                   <span className="method-icon">📧</span>
                   <div>
                     <h4>Email</h4>
-                    <a href="mailto:your.email@example.com">your.email@example.com</a>
+                    <a href="mailto:your.Fanubahta@gmail.com">Fanubahta@gmail.com</a>
                   </div>
                 </div>
                 <div className="contact-method">
                   <span className="method-icon">📱</span>
                   <div>
                     <h4>Telegram / Phone</h4>
-                    <a href="https://t.me/yourusername">@yourusername</a>
-                    <span className="phone">+251 9XX XXX XXX</span>
+                    <a href="https://t.me/Fanu">@Fanu</a>
+                    <span className="phone">+251 932743247</span>
                   </div>
                 </div>
                 <div className="contact-method">
@@ -544,9 +591,9 @@ function App() {
                   <div>
                     <h4>Social</h4>
                     <div className="social-links">
-                      <a href="#" target="_blank">GitHub</a>
-                      <a href="#" target="_blank">LinkedIn</a>
-                      <a href="#" target="_blank">Twitter</a>
+                      <a href="https://github.com/Fanitu" target="_blank">GitHub</a>
+                      <a href="https://www.linkedin.com/in/fanuel-bahta-7b5555334?utm_source=share_via&utm_content=profile&utm_medium=member_android#" target="_blank">LinkedIn</a>
+                      <a href="https://www.instagram.com/fanuelbahta?igsh=eW5reWozb3JiaGZu#" target="_blank">instagram</a>
                     </div>
                   </div>
                 </div>
@@ -593,8 +640,20 @@ function App() {
                     required
                   ></textarea>
                 </div>
-                <button type="submit" className="btn-submit">
-                  Send Message →
+                <button 
+                    type="submit" 
+                    className={`btn-submit ${isSubmitting ? 'submitting' : ''} ${submitStatus === 'success' ? 'success' : ''} ${submitStatus === 'error' ? 'error' : ''}`}
+                    disabled={isSubmitting}
+                    >
+                    {isSubmitting ? (
+                        'Sending...'
+                    ) : submitStatus === 'success' ? (
+                        '✓ Sent Successfully!'
+                    ) : submitStatus === 'error' ? (
+                        '✗ Failed. Try Again?'
+                    ) : (
+                        'Send Message →'
+                    )}
                 </button>
               </form>
             </div>
@@ -620,10 +679,10 @@ function App() {
               </div>
               <div className="footer-links-column">
                 <h4>Connect</h4>
-                <a href="#">GitHub</a>
-                <a href="#">LinkedIn</a>
-                <a href="#">Twitter</a>
-                <a href="#">Telegram</a>
+                <a href="https://github.com/Fanitu">GitHub</a>
+                <a href="https://www.linkedin.com/in/fanuel-bahta-7b5555334?utm_source=share_via&utm_content=profile&utm_medium=member_android#">LinkedIn</a>
+                <a href="https://www.instagram.com/fanuelbahta?igsh=eW5reWozb3JiaGZu#">Instagram</a>
+                <a href="https://t.me/Fanu">Telegram</a>
               </div>
             </div>
           </div>
@@ -633,6 +692,7 @@ function App() {
           </div>
         </div>
       </footer>
+      <ChatBot/>
     </div>
   );
 }
