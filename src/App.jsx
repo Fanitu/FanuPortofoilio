@@ -56,7 +56,7 @@ function App() {
       "JWT",
       "Vercel"
     ],
-    liveUrl: https://nur-managment-frontend-8u92.vercel.app",
+    liveUrl:" https://nur-managment-frontend-8u92.vercel.app",
     featured: true,
   },
 
