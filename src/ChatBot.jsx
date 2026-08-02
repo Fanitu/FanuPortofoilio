@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatBot.css';
 
@@ -13,27 +12,38 @@ function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-
-
-
-
+  // Scroll to top when chat opens on mobile
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 300);
+    if (isOpen) {
+      // Don't auto-focus on mobile to prevent keyboard from opening
+      if (window.innerWidth > 480 && inputRef.current) {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 300);
+      }
+      
+      // Scroll to top on mobile to show header and greeting
+      if (window.innerWidth <= 480 && messagesContainerRef.current) {
+        setTimeout(() => {
+          messagesContainerRef.current.scrollTop = 0;
+        }, 100);
+      }
     }
   }, [isOpen]);
 
-
-
-
+  // Auto-scroll to bottom when new messages arrive (desktop only)
+  useEffect(() => {
+    if (window.innerWidth > 480) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading]);
 
   const openChat = () => {
     setIsOpen(true);
@@ -96,16 +106,12 @@ RULES:
     setInput('');
     setIsLoading(true);
 
-
     try {
-      // Convert internal messages to API format
       const apiMessages = [
         { role: 'system', content: systemPrompt }
       ];
 
-      // Add conversation history (skip the first welcome message if it's the only one)
       messages.forEach(msg => {
-        // Convert 'assistant' to valid API role
         const role = msg.role === 'assistant' ? 'assistant' : 
                      msg.role === 'user' ? 'user' : 'assistant';
 
@@ -115,15 +121,12 @@ RULES:
         });
       });
 
-      // Add the new user message
       apiMessages.push({
         role: 'user',
         content: userInput
       });
-      console.log(import.meta.env)
 
       const apiKey = import.meta.env.VITE_APP_GROQ_API_KEY;
-      console.log('Api key',apiKey)
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -146,8 +149,6 @@ RULES:
       }
 
       const data = await response.json();
-      console.log('Groq Response:', data);
-
       const aiResponse = data.choices?.[0]?.message?.content || 
         "I apologize, but I'm having trouble responding right now.";
 
@@ -200,7 +201,7 @@ RULES:
           </div>
 
           {/* Messages */}
-          <div className="chatbot-messages">
+          <div className="chatbot-messages" ref={messagesContainerRef}>
             {messages.map((msg, index) => (
               <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
                 {msg.role !== 'user' && (
