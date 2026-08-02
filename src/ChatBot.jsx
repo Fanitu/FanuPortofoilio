@@ -40,10 +40,27 @@ function ChatBot() {
 
   // Auto-scroll to bottom when new messages arrive (desktop only)
   useEffect(() => {
-    if (window.innerWidth > 480) {
-      scrollToBottom();
-    }
-  }, [messages, isLoading]);
+    scrollToBottom();
+}, [messages, isLoading]);
+
+useEffect(() => {
+
+    const updateHeight = () => {
+
+        document.documentElement.style.setProperty(
+            "--chat-height",
+            `${window.innerHeight}px`
+        );
+
+    };
+
+    updateHeight();
+
+    window.addEventListener("resize", updateHeight);
+
+    return () => window.removeEventListener("resize", updateHeight);
+
+}, []);
 
   const openChat = () => {
     setIsOpen(true);
