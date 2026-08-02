@@ -6,10 +6,10 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Overlay - fixed to viewport, behind chat window but above everything else */
+/* Overlay - fixed to viewport */
 .chatbot-overlay {
   position: fixed;
-  top: 60;
+  top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
@@ -25,7 +25,7 @@
   to { opacity: 1; }
 }
 
-/* Toggle Button - hidden when chat is open */
+/* Toggle Button */
 .chatbot-toggle-btn {
   position: relative;
   width: 60px;
@@ -124,7 +124,7 @@
   50% { opacity: 0.6; }
 }
 
-/* Chat Window */
+/* Chat Window - Desktop */
 .chatbot-window {
   position: fixed;
   bottom: 100px;
@@ -235,6 +235,7 @@
   flex-direction: column;
   gap: 16px;
   background: #f8f9fb;
+  -webkit-overflow-scrolling: touch;
 }
 
 .chatbot-messages::-webkit-scrollbar {
@@ -256,6 +257,7 @@
   align-items: flex-end;
   gap: 8px;
   animation: messageSlide 0.3s ease;
+  flex-shrink: 0;
 }
 
 @keyframes messageSlide {
@@ -418,7 +420,7 @@
   cursor: not-allowed;
 }
 
-/* Mobile Responsive */
+/* ============ MOBILE RESPONSIVE ============ */
 @media (max-width: 480px) {
   .chatbot-widget {
     bottom: 16px;
@@ -440,234 +442,41 @@
   }
 
   .chatbot-window {
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    border-radius: 0;
-    max-width: 100%;
-  }
-
-  .chatbot-header {
-    padding: 16px;
-  }
-
-  .chatbot-messages {
-    padding: 16px;
-  }
-
-  .chatbot-input-area {
-    padding: 12px 16px;
-  }
-}
-
-
-/* Messages Container */
-.chatbot-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #f8f9fb;
-  -webkit-overflow-scrolling: touch;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* Messages Container */
-.chatbot-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #f8f9fb;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Mobile Responsive - KEYBOARD FIX */
-@media (max-width: 480px) {
-  .chatbot-widget {
-    bottom: 16px;
-    right: 16px;
-  }
-
-  .chatbot-toggle-btn {
-    width: 52px;
-    height: 52px;
-  }
-
-  .chatbot-greeting {
-    font-size: 12px;
-    padding: 8px 12px;
-    right: 62px;
-    max-width: 180px;
-    white-space: normal;
-    line-height: 1.3;
-  }
-
-  .chatbot-window {
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    border-radius: 0;
-    max-width: 100%;
-    /* CRITICAL: Fix the window position */
     position: fixed;
     top: 0;
     left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .chatbot-header {
     padding: 16px;
-    /* Keep header always visible at top */
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    padding-top: max(16px, env(safe-area-inset-top));
     flex-shrink: 0;
   }
 
-  /* FIX: Make messages container fill available space and start from top */
   .chatbot-messages {
     padding: 16px;
+    flex: 1;
+    min-height: 0;
     justify-content: flex-start;
     overflow-anchor: none;
-    /* Take remaining space after header and before input */
-    flex: 1;
-    /* Prevent keyboard from pushing messages out of view */
-    min-height: 0;
-    /* Allow scrolling within messages area only */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .chatbot-messages > * {
     overflow-anchor: none;
   }
 
-  .chatbot-messages > div:last-child {
-    overflow-anchor: none;
-  }
-
   .chatbot-input-area {
     padding: 12px 16px;
-    /* Keep input area at the bottom */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
     flex-shrink: 0;
-    /* Don't let keyboard push it up, keep it at bottom */
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    background: white;
-  }
-
-  /* THIS IS THE KEYBOARD FIX */
-  .chatbot-window {
-    /* Use dvh (dynamic viewport height) to handle keyboard properly */
-    height: 100dvh;
-    max-height: 100dvh;
-    /* Prevent the entire window from being pushed up by keyboard */
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Alternative: If dvh doesn't work, use this approach */
-  @supports not (height: 100dvh) {
-    .chatbot-window {
-      height: 100vh;
-      max-height: 100vh;
-      /* This prevents the viewport from resizing when keyboard opens */
-      height: -webkit-fill-available;
-    }
-  }
-}
-
-
-
-
-
-/* Add this outside of media queries for all devices */
-.chatbot-window {
-  position: fixed;
-  bottom: 100px;
-  right: 24px;
-  width: 400px;
-  max-width: calc(100vw - 48px);
-  height: 600px;
-  max-height: calc(100vh - 140px);
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 10001;
-  animation: slideUp 0.3s ease;
-}
-
-/* Mobile specific keyboard handling */
-@media (max-width: 480px) {
-  .chatbot-window {
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100dvh; /* Use dynamic viewport height */
-    max-height: 100dvh;
-    border-radius: 0;
-    max-width: 100%;
-    top: 0;
-    left: 0;
-    
-    /* CRITICAL: This prevents the keyboard from pushing content up */
-    position: fixed;
-  }
-
-  /* Ensure the header stays visible even with keyboard open */
-  .chatbot-header {
-    flex-shrink: 0;
-    position: relative; /* Change from sticky to relative on mobile */
-    z-index: 10;
-  }
-
-  .chatbot-messages {
-    flex: 1 1 auto;
-    min-height: 0; /* Important for flex to work properly */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    /* Start content from top */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-
-  .chatbot-input-area {
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
-  }
-
-  /* Handle safe areas for notched phones */
-  @supports (padding: env(safe-area-inset-bottom)) {
-    .chatbot-window {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    
-    .chatbot-header {
-      padding-top: env(safe-area-inset-top);
-    }
   }
 }
