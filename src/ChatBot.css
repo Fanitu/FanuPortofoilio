@@ -10,7 +10,7 @@
 /* Overlay - fixed to viewport, behind chat window but above everything else */
 .chatbot-overlay {
   position: fixed;
-  top: 0;
+  top: 60;
   left: 0;
   width: 100vw;
   height: 100vh;
