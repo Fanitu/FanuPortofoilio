@@ -10,6 +10,26 @@ function App() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const observerRef = useRef(null);
 
+
+useEffect(() => {
+  if (isOpen && inputRef.current) {
+    // Delay focus to let the chat window settle first
+    setTimeout(() => {
+      // Only focus on desktop, not mobile
+      if (window.innerWidth > 480) {
+        inputRef.current?.focus();
+      }
+    }, 500);
+  }
+  
+  // Reset scroll position when chat opens
+  if (isOpen && messagesContainerRef.current) {
+    setTimeout(() => {
+      messagesContainerRef.current.scrollTop = 0;
+    }, 100);
+  }
+}, [isOpen]);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
