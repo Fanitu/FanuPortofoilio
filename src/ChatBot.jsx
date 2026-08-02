@@ -12,13 +12,33 @@ function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
+  const isMobile = () => window.innerWidth <= 480;
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Check if user is near the bottom of the messages
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    
+    const threshold = 100; // pixels from bottom
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= threshold;
   };
 
   useEffect(() => {
+    if (isMobile()) {
+      // On mobile, only auto-scroll if user is near the bottom
+      setShouldAutoScroll(isNearBottom());
+    }
     scrollToBottom();
   }, [messages, isLoading]);
 
@@ -28,10 +48,25 @@ function ChatBot() {
         inputRef.current?.focus();
       }, 300);
     }
+    
+    // Reset scroll position when chat opens on mobile
+    if (isOpen && isMobile() && messagesContainerRef.current) {
+      setTimeout(() => {
+        messagesContainerRef.current.scrollTop = 0;
+      }, 100);
+    }
   }, [isOpen]);
+
+  // Track scroll position to determine if we should auto-scroll
+  const handleScroll = () => {
+    if (isMobile()) {
+      setShouldAutoScroll(isNearBottom());
+    }
+  };
 
   const openChat = () => {
     setIsOpen(true);
+    setShouldAutoScroll(false); // Don't auto-scroll on initial open
   };
 
   const closeChat = () => {
@@ -86,11 +121,13 @@ RULES:
 
     const userInput = input.trim();
     const newUserMessage = { role: 'user', content: userInput };
-    
+
     setMessages(prev => [...prev, newUserMessage]);
     setInput('');
     setIsLoading(true);
     
+    // Enable auto-scroll when user sends a message
+    setShouldAutoScroll(true);
 
     try {
       // Convert internal messages to API format
@@ -103,7 +140,7 @@ RULES:
         // Convert 'assistant' to valid API role
         const role = msg.role === 'assistant' ? 'assistant' : 
                      msg.role === 'user' ? 'user' : 'assistant';
-        
+
         apiMessages.push({
           role: role,
           content: msg.content
@@ -142,7 +179,7 @@ RULES:
 
       const data = await response.json();
       console.log('Groq Response:', data);
-      
+
       const aiResponse = data.choices?.[0]?.message?.content || 
         "I apologize, but I'm having trouble responding right now.";
 
@@ -195,7 +232,11 @@ RULES:
           </div>
 
           {/* Messages */}
-          <div className="chatbot-messages">
+          <div 
+            className="chatbot-messages" 
+            ref={messagesContainerRef}
+            onScroll={handleScroll}
+          >
             {messages.map((msg, index) => (
               <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
                 {msg.role !== 'user' && (
