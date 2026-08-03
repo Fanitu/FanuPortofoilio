@@ -14,35 +14,52 @@ function ChatBot() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const messagesContainerRef = useRef(null);
-  const chatWindowRef = useRef(null);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [isMobile, setIsMobile] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // Handle viewport height changes (mobile keyboard)
+  // Detect mobile and keyboard
   useEffect(() => {
-    const handleResize = () => {
-      setViewportHeight(window.innerHeight);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
     };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
 
-    window.addEventListener('resize', handleResize);
-    // VisualViewport API for better mobile keyboard handling
+    // Track visual viewport for keyboard detection
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
+      const handleViewportResize = () => {
+        const currentHeight = window.innerHeight;
+        const viewportHeight = window.visualViewport.height;
+        const keyboardDiff = currentHeight - viewportHeight;
+        
+        // Only track if difference is significant (keyboard is open)
+        if (keyboardDiff > 150) {
+          setKeyboardHeight(keyboardDiff);
+        } else {
+          setKeyboardHeight(0);
+        }
+      };
+
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      window.visualViewport.addEventListener('scroll', handleViewportResize);
+
+      return () => {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+        window.visualViewport.removeEventListener('scroll', handleViewportResize);
+      };
     }
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-      }
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current;
-      requestAnimationFrame(() => {
-        container.scrollTop = container.scrollHeight;
-      });
+      setTimeout(() => {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }, 100);
     }
   };
 
@@ -51,34 +68,34 @@ function ChatBot() {
   }, [messages, isLoading]);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isOpen && inputRef.current && !isMobile) {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 300);
     }
-  }, [isOpen]);
+  }, [isOpen, isMobile]);
 
   // Lock body scroll when chat is open on mobile
   useEffect(() => {
-    if (isOpen) {
-      const isMobile = window.innerWidth <= 480;
-      if (isMobile) {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-      }
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    }
+    if (isOpen && isMobile) {
+      const scrollY = window.scrollY;
+      
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
 
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    };
-  }, [isOpen]);
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen, isMobile]);
 
   const openChat = () => {
     setIsOpen(true);
@@ -86,6 +103,7 @@ function ChatBot() {
 
   const closeChat = () => {
     setIsOpen(false);
+    setKeyboardHeight(0);
   };
 
   const systemPrompt = `You are Fanuel Bahta's AI assistant. You help visitors learn about Fanuel's work and experience.
@@ -141,6 +159,11 @@ RULES:
     setInput('');
     setIsLoading(true);
 
+    // Keep focus on input after sending
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+
     try {
       const apiMessages = [
         { role: 'system', content: systemPrompt }
@@ -149,17 +172,10 @@ RULES:
       messages.forEach(msg => {
         const role = msg.role === 'assistant' ? 'assistant' : 
                      msg.role === 'user' ? 'user' : 'assistant';
-
-        apiMessages.push({
-          role: role,
-          content: msg.content
-        });
+        apiMessages.push({ role, content: msg.content });
       });
 
-      apiMessages.push({
-        role: 'user',
-        content: userInput
-      });
+      apiMessages.push({ role: 'user', content: userInput });
 
       const apiKey = import.meta.env.VITE_APP_GROQ_API_KEY;
 
@@ -179,7 +195,6 @@ RULES:
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Groq API Error:', errorData);
         throw new Error(errorData.error?.message || `HTTP ${response.status}`);
       }
 
@@ -196,6 +211,9 @@ RULES:
       }]);
     } finally {
       setIsLoading(false);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
 
@@ -206,16 +224,16 @@ RULES:
     }
   };
 
+  const chatWindowStyle = isMobile ? {
+    paddingBottom: `${keyboardHeight}px`
+  } : {};
+
   return (
-    <div className={`chatbot-widget ${isOpen ? 'open' : ''}`}>
+    <div className={`chatbot-widget ${isOpen ? 'open' : ''} ${isMobile ? 'mobile' : 'desktop'}`}>
       {/* Chat Window */}
       {isOpen && (
-        <div 
-          className="chatbot-window" 
-          ref={chatWindowRef}
-          style={{ height: `${viewportHeight}px` }}
-        >
-          {/* Header - Fixed */}
+        <div className="chatbot-window" style={chatWindowStyle}>
+          {/* Header */}
           <div className="chatbot-header">
             <div className="chatbot-header-info">
               <div className="chatbot-avatar">
@@ -234,41 +252,38 @@ RULES:
             </button>
           </div>
 
-          {/* Messages - Scrollable */}
+          {/* Messages */}
           <div className="chatbot-messages" ref={messagesContainerRef}>
-            <div className="messages-wrapper">
-              {messages.map((msg, index) => (
-                <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
-                  {msg.role !== 'user' && (
-                    <div className="message-avatar ai-avatar">🤖</div>
-                  )}
-                  <div className="message-bubble">
-                    <p>{msg.content}</p>
-                  </div>
-                  {msg.role === 'user' && (
-                    <div className="message-avatar user-avatar">👤</div>
-                  )}
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="message ai">
+            {messages.map((msg, index) => (
+              <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                {msg.role !== 'user' && (
                   <div className="message-avatar ai-avatar">🤖</div>
-                  <div className="message-bubble loading-bubble">
-                    <div className="typing-indicator">
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                    </div>
+                )}
+                <div className="message-bubble">
+                  <p>{msg.content}</p>
+                </div>
+                {msg.role === 'user' && (
+                  <div className="message-avatar user-avatar">👤</div>
+                )}
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="message ai">
+                <div className="message-avatar ai-avatar">🤖</div>
+                <div className="message-bubble loading-bubble">
+                  <div className="typing-indicator">
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
                   </div>
                 </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Input - Fixed at bottom */}
+          {/* Input */}
           <div className="chatbot-input-area">
             <input
               ref={inputRef}
@@ -279,6 +294,7 @@ RULES:
               onKeyPress={handleKeyPress}
               disabled={isLoading}
               autoComplete="off"
+              enterKeyHint="send"
             />
             <button 
               className="chatbot-send-btn"
@@ -287,14 +303,7 @@ RULES:
               aria-label="Send message"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path 
-                  d="M2 10L18 2L10 18L8 12L2 10Z" 
-                  fill="currentColor"
-                  stroke="currentColor" 
-                  strokeWidth="1.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
+                <path d="M2 10L18 2L10 18L8 12L2 10Z" fill="currentColor"/>
               </svg>
             </button>
           </div>
