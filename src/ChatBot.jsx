@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatBot.css';
 
@@ -14,9 +13,37 @@ function ChatBot() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const chatWindowRef = useRef(null);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Handle viewport height changes (mobile keyboard)
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    // VisualViewport API for better mobile keyboard handling
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+      });
+    }
   };
 
   useEffect(() => {
@@ -29,6 +56,28 @@ function ChatBot() {
         inputRef.current?.focus();
       }, 300);
     }
+  }, [isOpen]);
+
+  // Lock body scroll when chat is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      const isMobile = window.innerWidth <= 480;
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+      }
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
   }, [isOpen]);
 
   const openChat = () => {
@@ -92,16 +141,12 @@ RULES:
     setInput('');
     setIsLoading(true);
 
-
     try {
-      // Convert internal messages to API format
       const apiMessages = [
         { role: 'system', content: systemPrompt }
       ];
 
-      // Add conversation history (skip the first welcome message if it's the only one)
       messages.forEach(msg => {
-        // Convert 'assistant' to valid API role
         const role = msg.role === 'assistant' ? 'assistant' : 
                      msg.role === 'user' ? 'user' : 'assistant';
 
@@ -111,15 +156,12 @@ RULES:
         });
       });
 
-      // Add the new user message
       apiMessages.push({
         role: 'user',
         content: userInput
       });
-      console.log(import.meta.env)
 
       const apiKey = import.meta.env.VITE_APP_GROQ_API_KEY;
-      console.log('Api key',apiKey)
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -142,8 +184,6 @@ RULES:
       }
 
       const data = await response.json();
-      console.log('Groq Response:', data);
-
       const aiResponse = data.choices?.[0]?.message?.content || 
         "I apologize, but I'm having trouble responding right now.";
 
@@ -168,15 +208,14 @@ RULES:
 
   return (
     <div className={`chatbot-widget ${isOpen ? 'open' : ''}`}>
-      {/* Overlay */}
-      {isOpen && (
-        <div className="chatbot-overlay" onClick={closeChat} />
-      )}
-
       {/* Chat Window */}
       {isOpen && (
-        <div className="chatbot-window">
-          {/* Header */}
+        <div 
+          className="chatbot-window" 
+          ref={chatWindowRef}
+          style={{ height: `${viewportHeight}px` }}
+        >
+          {/* Header - Fixed */}
           <div className="chatbot-header">
             <div className="chatbot-header-info">
               <div className="chatbot-avatar">
@@ -188,47 +227,48 @@ RULES:
                 <p>Ask me anything!</p>
               </div>
             </div>
-            <button className="chatbot-close-btn" onClick={closeChat}>
+            <button className="chatbot-close-btn" onClick={closeChat} aria-label="Close chat">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="chatbot-messages">
-            {messages.map((msg, index) => (
-              <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
-                {msg.role !== 'user' && (
-                  <div className="message-avatar ai-avatar">🤖</div>
-                )}
-                <div className="message-bubble">
-                  <p>{msg.content}</p>
+          {/* Messages - Scrollable */}
+          <div className="chatbot-messages" ref={messagesContainerRef}>
+            <div className="messages-wrapper">
+              {messages.map((msg, index) => (
+                <div key={index} className={`message ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                  {msg.role !== 'user' && (
+                    <div className="message-avatar ai-avatar">🤖</div>
+                  )}
+                  <div className="message-bubble">
+                    <p>{msg.content}</p>
+                  </div>
+                  {msg.role === 'user' && (
+                    <div className="message-avatar user-avatar">👤</div>
+                  )}
                 </div>
-                {msg.role === 'user' && (
-                  <div className="message-avatar user-avatar">👤</div>
-                )}
-              </div>
-            ))}
+              ))}
 
-            {/* Loading Animation */}
-            {isLoading && (
-              <div className="message ai">
-                <div className="message-avatar ai-avatar">🤖</div>
-                <div className="message-bubble loading-bubble">
-                  <div className="typing-indicator">
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                    <span className="dot"></span>
+              {isLoading && (
+                <div className="message ai">
+                  <div className="message-avatar ai-avatar">🤖</div>
+                  <div className="message-bubble loading-bubble">
+                    <div className="typing-indicator">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
-          {/* Input */}
+          {/* Input - Fixed at bottom */}
           <div className="chatbot-input-area">
             <input
               ref={inputRef}
@@ -238,11 +278,13 @@ RULES:
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               disabled={isLoading}
+              autoComplete="off"
             />
             <button 
               className="chatbot-send-btn"
               onClick={sendMessage}
               disabled={!input.trim() || isLoading}
+              aria-label="Send message"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path 
@@ -264,6 +306,7 @@ RULES:
         className="chatbot-toggle-btn"
         onClick={openChat}
         style={{ display: isOpen ? 'none' : 'flex' }}
+        aria-label="Open chat"
       >
         <div className="chatbot-greeting">
           <span>Hey there, any questions? Ask me.</span>
