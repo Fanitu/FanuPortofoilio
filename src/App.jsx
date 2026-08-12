@@ -77,7 +77,7 @@ function App() {
       "MongoDB",
       "JWT"
     ],
-    liveUrl: "#",
+    liveUrl: "https://barber-managment-system.vercel.app/",
     featured: true,
   },
 
