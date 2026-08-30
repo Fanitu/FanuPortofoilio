@@ -736,8 +736,8 @@ ${formData.message}
             </div>
           </div>
           <div className="footer-bottom">
-            <p>© 2026 DevPortfolio. All rights reserved.</p>
-            <p className="footer-tagline">Built with ⚛️ React & 💚 Vite</p>
+            <p>© 2026 Fanu Portfolio. All rights reserved.</p>
+            
           </div>
         </div>
       </footer>
