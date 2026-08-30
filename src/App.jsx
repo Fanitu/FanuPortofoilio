@@ -253,7 +253,7 @@ ${formData.message}
         <div className="container nav-container">
           <div className="nav-logo" onClick={() => scrollToSection('hero')}>
             <span className="logo-icon">{"</>"}</span>
-            <span className="logo-text">Dev<span>Portfolio</span></span>
+            <span className="logo-text">Fanu<span>Portfolio</span></span>
           </div>
 
           <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
